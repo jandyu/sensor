@@ -7,7 +7,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"time"
 )
 
 type Logger interface {
@@ -32,7 +31,7 @@ func (logger *StdLogger) PrintCommand(sessionId string, command string, params s
 	if command == "PASS" {
 		log.Printf("%s > PASS ****", sessionId)
 	} else {
-		log.Printf("%s: %s > %s \n %s", time.Now().Format(time.RFC3339), sessionId, command, params)
+		log.Printf("%s > %s \n %s", sessionId, command, params)
 	}
 }
 

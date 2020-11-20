@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"net"
 	"strconv"
-	"time"
 )
 
 type ServerOpts struct {
@@ -51,7 +50,7 @@ func serverOptsWithDefaults(opts *ServerOpts) *ServerOpts {
 		newOpts.Port = opts.Port
 	}
 	if opts.Name == "" {
-		newOpts.Name = "Go FTP Server"
+		newOpts.Name = "Monitor Server"
 	} else {
 		newOpts.Name = opts.Name
 	}
@@ -103,7 +102,7 @@ func (server *Server) Serve(l net.Listener) error {
 			}
 			return err
 		} else {
-			server.logger.Printf(sessionID, time.Now().Format(time.RFC3339), "accept new connection", tcpConn.RemoteAddr())
+			server.logger.Printf(sessionID, "accept new connection", tcpConn.RemoteAddr())
 		}
 
 		dconn := server.newConn(tcpConn)

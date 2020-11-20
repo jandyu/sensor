@@ -1,0 +1,138 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="format-detection" content="telephone=no">
+<title>LED</title>
+<script type="text/javascript" src="jquery.min.js"></script> 
+
+
+<style>
+body,ul,ol,li,p,h1,h2,h3,h4,h5,h6,form,fieldset,img,div{margin:0;padding:0;border:0;} 
+body,html{ height: 100%; width: 100%;font-size: 14px}
+.popup{
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: none;
+}
+tr>td:first-child{
+    text-align: right;
+}
+</style>
+</head>
+
+<body style="height:100%">
+<div style="width:100%;text-align: center;margin-top: 30px;margin-bottom: 20px">
+    <h2>水产状态显示设置
+    <button style="margin-left: 50px;width:90px;height:30px" onclick="ui2srv()">保存配置</button>
+    <button style="margin-left: 50px;width:90px;height:30px" onclick="srv2ui()">刷新配置</button>
+    </h2>
+
+</div>
+    <div border="1" style="width:1210px;margin: auto" id="grid">
+
+    </div>
+</body>
+<script>
+    const ledCnt = 6
+
+    function genLed(){
+        for(let i=1;i<=ledCnt;i++){
+            let prefix = 'LED'+i
+            let html = '<div style="width:400px;margin: auto;float:left">\n' +
+                '                <table >\n' +
+                '                    <tr><td colspan="2" style="text-align: center">'+prefix+'</td></tr>\n' +
+                '                    <tr><td>标题:</td><td><input id="'+prefix+'_title" value=""></input></td></tr>\n' +
+                '                    <tr><td>区域或品种说明:</td><td><input id="'+prefix+'_area" value=""></input></td></tr>\n' +
+                '                    <tr><td>温度标题:</td><td><input id="'+prefix+'_temp" value="温度"></input></td></tr>\n' +
+                '                    <tr><td>标准温度(℃):</td><td><input id="'+prefix+'_tmp_stand" value="15℃"></input></td></tr>\n' +
+                '                    <tr><td>温度(℃):</td><td><input id="'+prefix+'_tmp_m" value="0" disabled></input></td></tr>\n' +
+                '                    <tr><td>盐度标题:</td><td><input id="'+prefix+'_salinity" value="盐度"></input></td></tr>\n' +
+                '                    <tr><td>标准盐度(%):</td><td><input id="'+prefix+'_sal_stand" value="3%"></input></td></tr>\n' +
+                '                    <tr><td>盐度(%):</td><td><input id="'+prefix+'_sal_m" value="0" disabled></input></td></tr>\n' +
+                '                    <tr><td>作业时间1:</td><td><input id="'+prefix+'_tm1" value="00:00--00:00"></input></td></tr>\n' +
+                '                    <tr><td>门店1(20个字):</td><td><input style="width: 250px" id="'+prefix+'_store1" value=""></input></td></tr>\n' +
+                '                    <tr><td>作业时间2:</td><td><input id="'+prefix+'_tm2" value=""></input></td></tr>\n' +
+                '                    <tr><td>门店2(20个字):</td><td><input style="width: 250px" id="'+prefix+'_store2" value=""></input></td></tr>\n' +
+                '                    <tr><td>作业时间3:</td><td><input id="'+prefix+'_tm3" value=""></input></td></tr>\n' +
+                '                    <tr><td>门店3(20个字):</td><td><input style="width: 250px" id="'+prefix+'_store3" value=""></input></td></tr>\n' +
+                '                </table>\n' +
+                '            </div>'
+            $("#grid").append(html)
+        }
+    }
+
+    //ui2srv
+    function ui2srv(){
+        if (!confirm("确认修改配置？")) {
+            return
+        }
+
+        var data={}
+        //组装ui数据
+        for(let i=1;i<=ledCnt;i++){
+            let prefix = 'LED'+i
+
+            data[prefix+'_title']=$('#'+prefix+'_title').val()
+            data[prefix+'_area']=$('#'+prefix+'_area').val()
+            data[prefix+'_temp']=$('#'+prefix+'_temp').val()
+            data[prefix+'_tmp_stand']=$('#'+prefix+'_tmp_stand').val()
+            data[prefix+'_tmp_m']='#'+prefix+'_tmp_m#'
+            data[prefix+'_salinity']=$('#'+prefix+'_salinity').val()
+            data[prefix+'_sal_stand']=$('#'+prefix+'_sal_stand').val()
+            data[prefix+'_sal_m']='#'+prefix+'_sal_m#'
+            data[prefix+'_tm1']=$('#'+prefix+'_tm1').val()
+            data[prefix+'_store1']=$('#'+prefix+'_store1').val()
+            data[prefix+'_tm2']=$('#'+prefix+'_tm2').val()
+            data[prefix+'_store2']=$('#'+prefix+'_store2').val()
+            data[prefix+'_tm3']=$('#'+prefix+'_tm3').val()
+            data[prefix+'_store3']=$('#'+prefix+'_store3').val()
+        }
+        console.info('data',data)
+        $.ajax({type: 'POST',
+            // url: "/rest/r/tracelist",
+            url: "/monitor/set",
+            data: JSON.stringify(data),
+            success: function(ret){
+                console.info("ok",ret)
+                alert(ret.message)
+            },
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+        });
+    }
+    //srv2ui
+    function srv2ui(){
+        $.ajax({type: 'GET',
+            // url: "/rest/r/tracelist",
+            url: "/monitor/get",
+            data: JSON.stringify(open),
+            success: function(ret){
+                $.each(ret,function(key,val){
+                    $("#"+key).val(val)
+                })
+
+            },
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+        });
+
+    }
+
+    $(function(){
+
+        genLed();
+
+        srv2ui();
+    
+    });
+
+</script>
+</html>

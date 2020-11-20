@@ -21,9 +21,11 @@ func (conn *Conn) Serve() {
 	conn.logger.Print(conn.sessionID, "Connection Established")
 	for {
 		//line, err := conn.controlReader.ReadString('\n')
-		dt := make([]byte, 72)
+		//line, err := conn.controlReader.ReadString('\n')
 
+		dt := make([]byte, 72)
 		_, err := io.ReadFull(conn.controlReader, dt)
+
 		if err != nil {
 			if err != io.EOF {
 				conn.logger.Print(conn.sessionID, fmt.Sprint("read error:", err))
@@ -31,7 +33,9 @@ func (conn *Conn) Serve() {
 
 			break
 		}
-		conn.receiveLine(dt)
+		conn.receiveByte(dt)
+
+		//conn.receiveLine(line)
 		// QUIT command closes connection, break to avoid error on reading from
 		// closed socket
 		if conn.closed == true {
@@ -45,12 +49,20 @@ func (conn *Conn) parseLine(line []byte) ([]byte, []byte) {
 	//4位终端号 +1位命令+ 1 位长度 + 64 位数据 + 2 位校验 = 72位
 	ter := line[:4]
 	dat := line[6:70]
+	crc := line[70:]
+
+	//保存数据
+
+	fmt.Println(ter, dat, crc)
 	return ter, dat
 }
 
-func (conn *Conn) receiveLine(line []byte) {
+func (conn *Conn) receiveByte(line []byte) {
 	command, param := conn.parseLine(line)
 	conn.logger.PrintCommand(conn.sessionID, fmt.Sprintf("%x", command), fmt.Sprintf("%x", param))
+}
+func (conn *Conn) receiveLine(line string) {
+	conn.logger.Print(conn.sessionID, line)
 }
 
 func (conn *Conn) writeMessage(code int, message []byte) (wrote int, err error) {
